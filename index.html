@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tetheer USDT Token</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.3/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            color: #222;
+            text-align: center;
+            padding: 40px;
+        }
+        img.logo {
+            width: 120px;
+            margin-bottom: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        #qr {
+            margin-top: 20px;
+        }
+        button, select {
+            padding: 10px 20px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .lang-select {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="lang-select">
+            <select onchange="switchLang(this.value)">
+                <option value="en">English</option>
+                <option value="fa">فارسی</option>
+                <option value="tr">Türkçe</option>
+            </select>
+        </div>
+        <img id="tokenLogo" class="logo" src="" alt="Token Logo" />
+        <h1 id="tokenName">Loading...</h1>
+        <p><strong id="lblSymbol">Symbol:</strong> <span id="tokenSymbol"></span></p>
+        <p><strong id="lblDecimals">Decimals:</strong> <span id="tokenDecimals"></span></p>
+        <p id="lblDescription">Description:</p>
+        <p id="tokenDescription"></p>
+        <p><a href="#" id="tokenWebsite" target="_blank">Project Website</a></p>
+        <div id="qr">
+            <h3 id="lblQR">Contract QR Code</h3>
+            <img src="token_contract_qr.png" width="180" />
+            <p><small>0xED880BdEC53b5b0c7ca0301Ac5ac858C795e457f</small></p>
+        </div>
+        <button onclick="connectWallet()" id="btnConnect">Connect Wallet</button>
+        <p id="balance"></p>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                symbol: "Symbol:",
+                decimals: "Decimals:",
+                description: "Description:",
+                website: "Project Website",
+                qr: "Contract QR Code",
+                connect: "Connect Wallet"
+            },
+            fa: {
+                symbol: "نماد:",
+                decimals: "تعداد اعشار:",
+                description: "توضیحات:",
+                website: "وب‌سایت پروژه",
+                qr: "کد QR قرارداد",
+                connect: "اتصال کیف‌پول"
+            },
+            tr: {
+                symbol: "Sembol:",
+                decimals: "Ondalık:",
+                description: "Açıklama:",
+                website: "Proje Web Sitesi",
+                qr: "Sözleşme QR Kodu",
+                connect: "Cüzdanı Bağla"
+            }
+        };
+
+        function switchLang(lang) {
+            document.getElementById("lblSymbol").textContent = translations[lang].symbol;
+            document.getElementById("lblDecimals").textContent = translations[lang].decimals;
+            document.getElementById("lblDescription").textContent = translations[lang].description;
+            document.getElementById("tokenWebsite").textContent = translations[lang].website;
+            document.getElementById("lblQR").textContent = translations[lang].qr;
+            document.getElementById("btnConnect").textContent = translations[lang].connect;
+        }
+
+        async function loadMetadata() {
+            const res = await fetch("https://raw.githubusercontent.com/Mira6115/tetheer-usdt-metadata/main/info.json");
+            const data = await res.json();
+            document.getElementById("tokenLogo").src = data.logoURI.replace("ipfs://", "https://ipfs.io/ipfs/");
+            document.getElementById("tokenName").textContent = data.name;
+            document.getElementById("tokenSymbol").textContent = data.symbol;
+            document.getElementById("tokenDecimals").textContent = data.decimals;
+            document.getElementById("tokenDescription").textContent = data.description;
+            document.getElementById("tokenWebsite").href = data.website;
+        }
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                const web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await web3.eth.getAccounts();
+                const balance = await web3.eth.getBalance(accounts[0]);
+                const ethBalance = web3.utils.fromWei(balance, 'ether');
+                document.getElementById("balance").textContent = `Connected: ${accounts[0]} | ETH Balance: ${ethBalance}`;
+            } else {
+                alert("MetaMask not detected");
+            }
+        }
+
+        loadMetadata();
+        switchLang("en");
+    </script>
+</body>
+</html>
